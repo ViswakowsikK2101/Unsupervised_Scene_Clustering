@@ -162,6 +162,79 @@ export default function ResultsPage() {
       </div>
 
       <SceneTimeline timelineData={results.timeline_data} />
+
+      {/* Visual Explainer & Presentation Guide Section */}
+      <div className="mt-12 border-t border-white/[0.08] pt-10">
+        <div className="flex items-center gap-2 mb-6">
+          <div className="p-2 bg-indigo-500/10 text-indigo-400 rounded-lg border border-indigo-500/20">
+            <Sparkles className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-white">How to Read & Present These Results</h3>
+            <p className="text-xs text-gray-400">Step-by-step breakdown of every graph, metric, and visualizer on this dashboard</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="glass-card-glow p-5 border border-white/[0.06]">
+            <div className="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-300 font-bold flex items-center justify-center text-xs mb-3">
+              01
+            </div>
+            <h4 className="text-sm font-bold text-white mb-1.5">Validation Metrics</h4>
+            <p className="text-xs text-gray-300 leading-relaxed mb-2">
+              Prove the quality of your clustering without needing ground truth:
+            </p>
+            <ul className="text-[11px] text-gray-400 space-y-1.5">
+              <li><strong className="text-indigo-300">Silhouette</strong>: High score (&gt;0.2) means frames in the same scene look alike, and different scenes are separated.</li>
+              <li><strong className="text-cyan-300">Calinski-Harabasz</strong>: High value shows compact, dense clusters.</li>
+              <li><strong className="text-purple-300">Davies-Bouldin</strong>: Low score indicates low similarity between scenes.</li>
+            </ul>
+          </div>
+
+          <div className="glass-card-glow p-5 border border-white/[0.06]">
+            <div className="w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-300 font-bold flex items-center justify-center text-xs mb-3">
+              02
+            </div>
+            <h4 className="text-sm font-bold text-white mb-1.5">Scene Synchronizer</h4>
+            <p className="text-xs text-gray-300 leading-relaxed mb-2">
+              Real-time video verification:
+            </p>
+            <ul className="text-[11px] text-gray-400 space-y-1.5">
+              <li><strong className="text-white">Active Scene Pill</strong>: Automatically detects and displays which scene cluster the video is currently in as it plays.</li>
+              <li><strong className="text-white">Jump Buttons</strong>: Click any scene entry point to jump the video directly to the start of that scene.</li>
+            </ul>
+          </div>
+
+          <div className="glass-card-glow p-5 border border-white/[0.06]">
+            <div className="w-8 h-8 rounded-lg bg-pink-500/20 text-pink-300 font-bold flex items-center justify-center text-xs mb-3">
+              03
+            </div>
+            <h4 className="text-sm font-bold text-white mb-1.5">2D Manifold Scatter</h4>
+            <p className="text-xs text-gray-300 leading-relaxed mb-2">
+              Visualizing high-dimensional space:
+            </p>
+            <ul className="text-[11px] text-gray-400 space-y-1.5">
+              <li><strong className="text-white">Each Dot</strong>: Represents a sampled video frame.</li>
+              <li><strong className="text-white">Colors</strong>: Correspond to assigned scene clusters.</li>
+              <li><strong className="text-white">t-SNE vs PCA</strong>: Toggle between non-linear manifold projection and principal variance components.</li>
+            </ul>
+          </div>
+
+          <div className="glass-card-glow p-5 border border-white/[0.06]">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-300 font-bold flex items-center justify-center text-xs mb-3">
+              04
+            </div>
+            <h4 className="text-sm font-bold text-white mb-1.5">Centroids & Timeline</h4>
+            <p className="text-xs text-gray-300 leading-relaxed mb-2">
+              Video story structure:
+            </p>
+            <ul className="text-[11px] text-gray-400 space-y-1.5">
+              <li><strong className="text-white">Centroid Keyframe</strong>: The single mathematical center frame that best represents that entire scene.</li>
+              <li><strong className="text-white">Timeline Bar</strong>: Shows continuous temporal sequence and where shot cuts occurred across video duration.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
