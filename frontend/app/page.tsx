@@ -32,7 +32,9 @@ export default function Home() {
       const mappedOptions = {
         ...options,
         feature_method: options.feature_method === 'Color Histogram' ? 'histogram' : 'cnn',
-        clustering_method: options.clustering_method.toLowerCase()
+        clustering_method: options.clustering_method.toLowerCase(),
+        n_clusters: options.num_clusters,
+        num_clusters: options.num_clusters,
       };
       
       await api.processVideo(scan_id, mappedOptions);

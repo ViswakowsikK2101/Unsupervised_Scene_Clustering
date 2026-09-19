@@ -60,7 +60,13 @@ async def upload_video(
 
 def process_video_task(scan_id: str, request: ProcessRequest, db: Client, settings):
     try:
-        db.table("scans").update({"status": "processing", "feature_method": request.feature_method, "clustering_method": request.clustering_method, "num_clusters": request.n_clusters}).eq("id", scan_id).execute()
+        num_clusters = request.get_num_clusters()
+        db.table("scans").update({
+            "status": "processing",
+            "feature_method": request.feature_method,
+            "clustering_method": request.clustering_method,
+            "num_clusters": num_clusters
+        }).eq("id", scan_id).execute()
         
         scan = db.table("scans").select("*").eq("id", scan_id).execute()
         if not scan.data:
@@ -79,7 +85,7 @@ def process_video_task(scan_id: str, request: ProcessRequest, db: Client, settin
         pipeline = SceneClusteringPipeline(
             feature_method=request.feature_method,
             clustering_method=request.clustering_method,
-            n_clusters=request.n_clusters,
+            n_clusters=num_clusters,
             pca_components=settings.PCA_COMPONENTS
         )
         

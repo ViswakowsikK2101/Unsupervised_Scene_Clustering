@@ -36,7 +36,8 @@ export interface ScanResults {
 export interface ProcessOptions {
   feature_method: string;
   clustering_method: string;
-  num_clusters: number;
+  num_clusters?: number;
+  n_clusters?: number;
 }
 
 export interface StatusResponse {

@@ -44,7 +44,15 @@ class ScanListResponse(BaseModel):
 class ProcessRequest(BaseModel):
     feature_method: str = 'cnn'
     clustering_method: str = 'kmeans'
-    n_clusters: int = 5
+    n_clusters: Optional[int] = None
+    num_clusters: Optional[int] = None
+
+    def get_num_clusters(self) -> int:
+        if self.n_clusters is not None:
+            return self.n_clusters
+        if self.num_clusters is not None:
+            return self.num_clusters
+        return 5
 
 class StatusResponse(BaseModel):
     status: str
