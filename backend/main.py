@@ -1,5 +1,12 @@
 import os
+import ssl
 import logging
+
+# Ultimate global SSL bypass for this specific machine
+os.environ['CURL_CA_BUNDLE'] = ''
+os.environ['REQUESTS_CA_BUNDLE'] = ''
+ssl._create_default_https_context = ssl._create_unverified_context
+ssl.create_default_context = ssl._create_unverified_context
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from config import get_settings

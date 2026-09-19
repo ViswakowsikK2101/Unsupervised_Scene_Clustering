@@ -46,8 +46,21 @@ export default function ResultsPage() {
 
     const fetchResults = async () => {
       try {
-        const data = await api.getResults(id);
-        setResults(data);
+        const [resultsData, scanData] = await Promise.allSettled([
+          api.getResults(id),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/history/${id}`).then(r => r.ok ? r.json() : null)
+        ]);
+        
+        if (resultsData.status === 'fulfilled') {
+          setResults(resultsData.value);
+        } else {
+          throw new Error(resultsData.reason?.message || "Failed to load results");
+        }
+
+        if (scanData.status === 'fulfilled' && scanData.value) {
+          setScanInfo(scanData.value);
+        }
+        
         setLoading(false);
       } catch (err: any) {
         setError("Failed to fetch results: " + err.message);
@@ -91,28 +104,47 @@ export default function ResultsPage() {
           <ArrowLeft className="w-4 h-4 mr-1" /> Back to Upload
         </Link>
         
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-          <span>Results</span>
-          <ChevronRight className="w-4 h-4" />
-          <span className="text-gray-300 font-mono">{id}</span>
+        <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-gray-800">
+          <div className="flex items-center gap-2 text-sm text-gray-400">
+            <span>Results</span>
+            <ChevronRight className="w-4 h-4 text-gray-600" />
+            <span className="text-white font-mono text-xs bg-gray-800/80 px-2 py-0.5 rounded border border-gray-700">{id.slice(0, 8)}...</span>
+          </div>
+
+          {scanInfo && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary-500/10 border border-primary-500/20 text-primary-300">
+                {scanInfo.video_name}
+              </span>
+              <span className="text-xs px-2.5 py-1 rounded-full bg-gray-800 text-gray-300 border border-gray-700">
+                Method: <strong className="text-white uppercase">{scanInfo.feature_method}</strong>
+              </span>
+              <span className="text-xs px-2.5 py-1 rounded-full bg-gray-800 text-gray-300 border border-gray-700">
+                Clusterer: <strong className="text-accent-400 uppercase">{scanInfo.clustering_method}</strong>
+              </span>
+              <span className="text-xs px-2.5 py-1 rounded-full bg-accent-500/10 border border-accent-500/20 text-accent-300 font-semibold">
+                {scanInfo.num_clusters} Scenes Detected
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
       <MetricsRow 
-        silhouette={results.metrics.silhouette_score}
-        calinski={results.metrics.calinski_harabasz_score}
-        davies={results.metrics.davies_bouldin_score}
+        silhouette={results.metrics?.silhouette_score ?? 0}
+        calinski={results.metrics?.calinski_harabasz_score ?? 0}
+        davies={results.metrics?.davies_bouldin_score ?? 0}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <ScatterPlot 
-          tsneCoords={results.tsne_coords} 
-          pcaCoords={results.pca_coords}
-          labels={results.cluster_labels} 
+          tsneCoords={results.tsne_coords || []} 
+          pcaCoords={results.pca_coords || []}
+          labels={results.cluster_labels || []} 
         />
         <ClusterGallery 
-          clusters={results.representative_frames}
-          clusterSizes={results.cluster_sizes}
+          clusters={results.representative_frames || {}}
+          clusterSizes={results.cluster_sizes || {}}
         />
       </div>
 

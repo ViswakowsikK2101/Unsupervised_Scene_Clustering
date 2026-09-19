@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { Eye, Image as ImageIcon } from 'lucide-react';
 
 interface ClusterGalleryProps {
-  clusters: Record<string, string[]>;
+  clusters: Record<string, string[] | string>;
   clusterSizes: Record<string, number>;
 }
 
@@ -13,7 +13,8 @@ export default function ClusterGallery({ clusters, clusterSizes }: ClusterGaller
   const clusterIds = Object.keys(clusters).sort((a, b) => parseInt(a) - parseInt(b));
   const [activeTab, setActiveTab] = useState<string>(clusterIds[0] || '0');
   
-  const currentImages = clusters[activeTab] || [];
+  const rawImages = clusters[activeTab];
+  const currentImages = Array.isArray(rawImages) ? rawImages : (rawImages ? [rawImages] : []);
 
   if (clusterIds.length === 0) {
     return (

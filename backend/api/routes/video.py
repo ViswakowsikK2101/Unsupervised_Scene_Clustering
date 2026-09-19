@@ -89,11 +89,21 @@ def process_video_task(scan_id: str, request: ProcessRequest, db: Client, settin
         frames = results.get("representative_frames", {})
         uploaded_frames = {}
         for cluster, frame_path in frames.items():
-            if os.path.exists(frame_path):
+            if isinstance(frame_path, str) and os.path.exists(frame_path):
                 frame_filename = f"{scan_id}_{cluster}.jpg"
-                with open(frame_path, 'rb') as f:
-                    db.storage.from_("frame-thumbnails").upload(frame_filename, f)
-                uploaded_frames[cluster] = db.storage.from_("frame-thumbnails").get_public_url(frame_filename)
+                try:
+                    with open(frame_path, 'rb') as f:
+                        file_bytes = f.read()
+                    db.storage.from_("frame-thumbnails").upload(
+                        frame_filename,
+                        file_bytes,
+                        {"content-type": "image/jpeg", "upsert": "true"}
+                    )
+                    uploaded_frames[str(cluster)] = db.storage.from_("frame-thumbnails").get_public_url(frame_filename)
+                except Exception as upload_err:
+                    logger.warning(f"Could not upload thumbnail for cluster {cluster}: {upload_err}")
+            elif isinstance(frame_path, (list, tuple)) and len(frame_path) > 0:
+                logger.info(f"Representative frame for cluster {cluster} is index {frame_path[0]}")
         
         metrics = results.get("metrics", {})
         scan_results_data = {
@@ -142,7 +152,20 @@ async def get_results(scan_id: str, db: Client = Depends(get_db_client)):
     res = db.table("scan_results").select("*").eq("scan_id", scan_id).execute()
     if not res.data:
         raise HTTPException(status_code=404, detail="Results not found")
-    return res.data[0]
+    row = res.data[0]
+    return {
+        "metrics": {
+            "silhouette_score": row.get("silhouette_score") or 0.0,
+            "calinski_harabasz_score": row.get("calinski_harabasz_score") or 0.0,
+            "davies_bouldin_score": row.get("davies_bouldin_score") or 0.0,
+        },
+        "cluster_labels": row.get("cluster_labels") or [],
+        "cluster_sizes": row.get("cluster_sizes") or {},
+        "tsne_coords": row.get("tsne_coords") or [],
+        "pca_coords": row.get("pca_coords") or [],
+        "timeline_data": row.get("timeline_data") or [],
+        "representative_frames": row.get("representative_frames") or {}
+    }
 
 @router.get("/frames/{scan_id}")
 async def get_frames(scan_id: str, db: Client = Depends(get_db_client)):

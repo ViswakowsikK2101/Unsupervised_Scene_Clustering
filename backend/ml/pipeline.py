@@ -140,7 +140,13 @@ class SceneClusteringPipeline:
                 # Find closest point to centroid
                 closest, _ = pairwise_distances_argmin_min(centroid, cluster_features)
                 original_idx = int(cluster_indices[closest[0]])
-                representative_frames[int(label)] = [original_idx]
+                
+                if output_dir:
+                    ts = timestamps[original_idx]
+                    frame_path = os.path.join(output_dir, f"frame_{original_idx:05d}_ts_{ts:.3f}.jpg")
+                    representative_frames[int(label)] = frame_path
+                else:
+                    representative_frames[int(label)] = [original_idx]
                 
         # 9. Assemble timeline data
         timeline_data = []
