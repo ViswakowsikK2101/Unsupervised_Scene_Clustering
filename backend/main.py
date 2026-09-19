@@ -37,6 +37,15 @@ async def startup_event():
     os.makedirs(settings.MODEL_DIR, exist_ok=True)
     logger.info("Application started, directories initialized.")
 
+@app.get("/")
+async def root():
+    return {
+        "status": "online",
+        "message": "Unsupervised Scene Clustering API is running smoothly.",
+        "documentation": "/docs",
+        "health": "/api/health"
+    }
+
 @app.get("/api/health")
 async def health_check():
     return {"status": "ok"}
