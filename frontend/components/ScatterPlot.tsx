@@ -5,9 +5,8 @@ import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Responsive
 import { Layers } from 'lucide-react';
 
 const COLORS = [
-  '#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', 
-  '#ec4899', '#06b6d4', '#f97316', '#6366f1', '#14b8a6',
-  '#84cc16', '#a855f7', '#f43f5e', '#0ea5e9', '#22c55e'
+  '#6366f1', '#06b6d4', '#ec4899', '#10b981', '#f59e0b', 
+  '#8b5cf6', '#3b82f6', '#84cc16', '#f43f5e', '#14b8a6'
 ];
 
 interface ScatterPlotProps {
@@ -17,7 +16,7 @@ interface ScatterPlotProps {
   title?: string;
 }
 
-export default function ScatterPlot({ tsneCoords, pcaCoords, labels, title = "Cluster Distribution" }: ScatterPlotProps) {
+export default function ScatterPlot({ tsneCoords, pcaCoords, labels, title = "2D Manifold Latent Projection" }: ScatterPlotProps) {
   const [viewMode, setViewMode] = useState<'tsne' | 'pca'>('tsne');
 
   const data = useMemo(() => {
@@ -25,8 +24,8 @@ export default function ScatterPlot({ tsneCoords, pcaCoords, labels, title = "Cl
     if (!coords || !labels) return [];
     
     return coords.map((coord, idx) => ({
-      x: coord[0],
-      y: coord[1],
+      x: Number(coord[0].toFixed(3)),
+      y: Number(coord[1].toFixed(3)),
       cluster: labels[idx],
       frameIdx: idx,
     }));
@@ -35,25 +34,34 @@ export default function ScatterPlot({ tsneCoords, pcaCoords, labels, title = "Cl
   const uniqueClusters = Array.from(new Set(labels)).sort((a, b) => a - b);
 
   return (
-    <div className="glass-card flex flex-col h-[500px]">
-      <div className="p-4 border-b border-gray-800 flex justify-between items-center">
-        <h3 className="font-semibold text-white flex items-center gap-2">
-          <Layers className="w-4 h-4 text-primary-400" />
-          {title}
-        </h3>
-        <div className="flex bg-gray-800 rounded-lg p-1">
+    <div className="glass-card-glow flex flex-col h-[520px] overflow-hidden border border-white/[0.08]">
+      <div className="p-4 border-b border-white/[0.08] flex justify-between items-center bg-white/[0.02]">
+        <div>
+          <h3 className="font-bold text-white flex items-center gap-2 text-sm">
+            <Layers className="w-4 h-4 text-cyan-400" />
+            {title}
+          </h3>
+          <p className="text-[11px] text-gray-400 mt-0.5">
+            {viewMode === 'tsne' ? 'Non-linear t-Distributed Stochastic Neighbor Embedding' : 'Linear Principal Component Analysis (Orthogonal Variance)'}
+          </p>
+        </div>
+        <div className="flex bg-black/40 rounded-xl p-1 border border-white/[0.08]">
           <button
             onClick={() => setViewMode('tsne')}
-            className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-              viewMode === 'tsne' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-200'
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+              viewMode === 'tsne' 
+                ? 'bg-indigo-600 text-white shadow-[0_0_12px_rgba(99,102,241,0.4)]' 
+                : 'text-gray-400 hover:text-white'
             }`}
           >
             t-SNE
           </button>
           <button
             onClick={() => setViewMode('pca')}
-            className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-              viewMode === 'pca' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-200'
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+              viewMode === 'pca' 
+                ? 'bg-cyan-600 text-white shadow-[0_0_12px_rgba(6,182,212,0.4)]' 
+                : 'text-gray-400 hover:text-white'
             }`}
           >
             PCA
@@ -63,42 +71,70 @@ export default function ScatterPlot({ tsneCoords, pcaCoords, labels, title = "Cl
       
       <div className="flex-1 p-4">
         <ResponsiveContainer width="100%" height="100%">
-          <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-            <XAxis type="number" dataKey="x" name="X" tick={{fill: '#9ca3af', fontSize: 12}} stroke="#4b5563" />
-            <YAxis type="number" dataKey="y" name="Y" tick={{fill: '#9ca3af', fontSize: 12}} stroke="#4b5563" />
+          <ScatterChart margin={{ top: 15, right: 15, bottom: 15, left: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.05)" />
+            <XAxis 
+              type="number" 
+              dataKey="x" 
+              name="Component 1" 
+              tick={{fill: '#6b7280', fontSize: 10}} 
+              stroke="rgba(255, 255, 255, 0.1)" 
+            />
+            <YAxis 
+              type="number" 
+              dataKey="y" 
+              name="Component 2" 
+              tick={{fill: '#6b7280', fontSize: 10}} 
+              stroke="rgba(255, 255, 255, 0.1)" 
+            />
             <Tooltip 
-              cursor={{ strokeDasharray: '3 3' }}
+              cursor={{ strokeDasharray: '3 3', stroke: 'rgba(255, 255, 255, 0.2)' }}
               content={({ active, payload }) => {
                 if (active && payload && payload.length) {
-                  const data = payload[0].payload;
+                  const d = payload[0].payload;
+                  const cColor = COLORS[d.cluster % COLORS.length];
                   return (
-                    <div className="bg-gray-900 border border-gray-700 p-3 rounded-lg shadow-xl">
-                      <p className="text-white font-medium mb-1">Frame {data.frameIdx}</p>
-                      <p className="text-sm text-gray-400 flex items-center gap-2">
-                        <span className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: COLORS[data.cluster % COLORS.length] }}></span>
-                        Cluster {data.cluster}
-                      </p>
+                    <div className="bg-gray-950/90 border border-white/[0.15] p-3 rounded-xl shadow-2xl backdrop-blur-xl text-xs">
+                      <div className="flex items-center justify-between gap-3 mb-2 pb-1.5 border-b border-white/[0.08]">
+                        <span className="text-white font-bold">Sample #{d.frameIdx}</span>
+                        <span className="font-mono text-[10px] px-1.5 py-0.2 rounded" style={{ backgroundColor: `${cColor}20`, color: cColor }}>
+                          Scene {d.cluster}
+                        </span>
+                      </div>
+                      <div className="text-gray-400 space-y-1 font-mono text-[11px]">
+                        <p>X: <strong className="text-gray-200">{d.x}</strong></p>
+                        <p>Y: <strong className="text-gray-200">{d.y}</strong></p>
+                      </div>
                     </div>
                   );
                 }
                 return null;
               }}
             />
-            <Scatter name="Frames" data={data} fill="#8884d8">
+            <Scatter name="Frames" data={data}>
               {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[entry.cluster % COLORS.length]} />
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={COLORS[entry.cluster % COLORS.length]} 
+                  opacity={0.85}
+                  r={4}
+                />
               ))}
             </Scatter>
           </ScatterChart>
         </ResponsiveContainer>
       </div>
-      
-      <div className="p-3 border-t border-gray-800 bg-gray-900/50 flex flex-wrap gap-3 overflow-y-auto max-h-24">
-        {uniqueClusters.map(cluster => (
+
+      {/* Cluster Legend Footer */}
+      <div className="p-3 border-t border-white/[0.06] bg-black/30 flex flex-wrap items-center gap-3 overflow-x-auto custom-scrollbar">
+        <span className="text-[11px] font-semibold text-gray-400">Clusters:</span>
+        {uniqueClusters.map((cluster) => (
           <div key={cluster} className="flex items-center gap-1.5 text-xs text-gray-300">
-            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[cluster % COLORS.length] }}></div>
-            Cluster {cluster}
+            <span 
+              className="w-2.5 h-2.5 rounded-full shadow-sm" 
+              style={{ backgroundColor: COLORS[cluster % COLORS.length] }}
+            />
+            <span>Scene {cluster}</span>
           </div>
         ))}
       </div>

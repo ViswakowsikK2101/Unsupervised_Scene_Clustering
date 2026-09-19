@@ -8,6 +8,7 @@ import { MetricsRow } from "@/components/MetricsCard";
 import ScatterPlot from "@/components/ScatterPlot";
 import ClusterGallery from "@/components/ClusterGallery";
 import SceneTimeline from "@/components/SceneTimeline";
+import VideoPlayerPreview from "@/components/VideoPlayerPreview";
 import { ChevronRight, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
@@ -20,6 +21,7 @@ export default function ResultsPage() {
   const [error, setError] = useState("");
   const [results, setResults] = useState<ScanResults | null>(null);
   const [scanInfo, setScanInfo] = useState<any>(null); // Simplified typing for now
+  const [highlightedCluster, setHighlightedCluster] = useState<string>('0');
   
   useEffect(() => {
     let pollInterval: NodeJS.Timeout;
@@ -136,6 +138,15 @@ export default function ResultsPage() {
         davies={results.metrics?.davies_bouldin_score ?? 0}
       />
 
+      {/* Synchronized Video Player & Scene Scrubber */}
+      <VideoPlayerPreview
+        videoUrl={scanInfo?.video_url}
+        timelineData={results.timeline_data || []}
+        numClusters={scanInfo?.num_clusters || 5}
+        activeCluster={highlightedCluster}
+        onClusterChange={setHighlightedCluster}
+      />
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <ScatterPlot 
           tsneCoords={results.tsne_coords || []} 
@@ -145,6 +156,8 @@ export default function ResultsPage() {
         <ClusterGallery 
           clusters={results.representative_frames || {}}
           clusterSizes={results.cluster_sizes || {}}
+          activeCluster={highlightedCluster}
+          onSelectCluster={setHighlightedCluster}
         />
       </div>
 
