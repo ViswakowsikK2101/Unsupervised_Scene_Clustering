@@ -8,17 +8,6 @@ import uuid
 import logging
 import json
 
-# Assuming pipeline is in ml.pipeline
-try:
-    from ml.pipeline import SceneClusteringPipeline
-except ImportError:
-    # Dummy pipeline for now if not implemented
-    class SceneClusteringPipeline:
-        def __init__(self, *args, **kwargs):
-            pass
-        def run(self, *args, **kwargs):
-            return {"scan_info": {}, "metrics": {}, "cluster_labels": [], "cluster_sizes": {}, "tsne_coords": [], "pca_coords": [], "timeline_data": [], "representative_frames": {}}
-
 router = APIRouter(prefix="/api", tags=["video"])
 logger = logging.getLogger(__name__)
 
@@ -82,6 +71,8 @@ def process_video_task(scan_id: str, request: ProcessRequest, db: Client, settin
         with open(temp_video_path, "wb") as f:
             f.write(res)
             
+        from ml.pipeline import SceneClusteringPipeline
+
         pipeline = SceneClusteringPipeline(
             feature_method=request.feature_method,
             clustering_method=request.clustering_method,
