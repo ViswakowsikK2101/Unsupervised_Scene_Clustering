@@ -9,7 +9,7 @@ import ScatterPlot from "@/components/ScatterPlot";
 import ClusterGallery from "@/components/ClusterGallery";
 import SceneTimeline from "@/components/SceneTimeline";
 import VideoPlayerPreview from "@/components/VideoPlayerPreview";
-import { ChevronRight, ArrowLeft } from "lucide-react";
+import { ChevronRight, ArrowLeft, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 export default function ResultsPage() {
