@@ -46,7 +46,7 @@ async def upload_video(
 
         scan_data = {
             "video_name": file.filename,
-            "status": "uploaded",
+            "status": "processing",
             "video_url": video_url
         }
         scan_res = db.table("scans").insert(scan_data).execute()
