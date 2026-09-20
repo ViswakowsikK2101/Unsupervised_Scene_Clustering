@@ -61,7 +61,14 @@ export const api = {
       method: 'POST',
       body: formData,
     });
-    if (!res.ok) throw new Error('Upload failed');
+    if (!res.ok) {
+      let errDetail = 'Upload failed';
+      try {
+        const errJson = await res.json();
+        errDetail = errJson.detail || errDetail;
+      } catch (_) {}
+      throw new Error(errDetail);
+    }
     return res.json();
   },
 
