@@ -28,24 +28,37 @@ async def upload_video(
         
     try:
         with open(upload_path, 'rb') as f:
-            res = db.storage.from_("video-uploads").upload(filename, f)
-        
+            file_bytes = f.read()
+
+        file_options = {
+            "content-type": file.content_type or "video/mp4",
+            "upsert": "true",
+        }
+
+        res = db.storage.from_("video-uploads").upload(
+            path=filename,
+            file=file_bytes,
+            file_options=file_options,
+        )
+        logger.info(f"Supabase storage upload result: {res}")
+
         video_url = db.storage.from_("video-uploads").get_public_url(filename)
-        
+
         scan_data = {
             "video_name": file.filename,
             "status": "uploaded",
             "video_url": video_url
         }
         scan_res = db.table("scans").insert(scan_data).execute()
-        
+
         return {"scan_id": scan_res.data[0]["id"]}
     except Exception as e:
-        logger.error(f"Upload failed: {e}")
+        logger.error(f"Upload failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         if os.path.exists(upload_path):
             os.remove(upload_path)
+
 
 def process_video_task(scan_id: str, request: ProcessRequest, db: Client, settings):
     try:
